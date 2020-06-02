@@ -2,6 +2,7 @@
 
 [![Open Collective supporters](https://opencollective.com/nixos/tiers/supporter/badge.svg?label=Supporters&color=brightgreen)](https://opencollective.com/nixos)
 [![Test](https://github.com/NixOS/nix/workflows/Test/badge.svg)](https://github.com/NixOS/nix/actions)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKloenk%2Fnixos-nix.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FKloenk%2Fnixos-nix?ref=badge_shield)
 
 Nix is a powerful package manager for Linux and other Unix systems that makes package
 management reliable and reproducible. Please refer to the [Nix manual](https://nixos.org/nix/manual)
@@ -52,3 +53,6 @@ $ make
 ## License
 
 Nix is released under the [LGPL v2.1](./COPYING).
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKloenk%2Fnixos-nix.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FKloenk%2Fnixos-nix?ref=badge_large)
