@@ -11,6 +11,7 @@ namespace nix::fetchers {
 DownloadFileResult downloadFile(
     ref<Store> store,
     const std::string & url,
+    const std::map<std::string, std::string> headers,
     const std::string & name,
     bool immutable)
 {
@@ -36,7 +37,9 @@ DownloadFileResult downloadFile(
     if (cached && !cached->expired)
         return useCached();
 
-    FileTransferRequest request(url);
+    
+
+    FileTransferRequest request(url, headers);
     if (cached)
         request.expectedETag = getStrAttr(cached->infoAttrs, "etag");
     FileTransferResult res;
@@ -102,9 +105,20 @@ DownloadFileResult downloadFile(
     };
 }
 
+DownloadFileResult downloadFile(
+    ref<Store> store,
+    const std::string & url,
+    const std::string & name,
+    bool immutable)
+{
+    std::map<std::string, std::string> headers;
+    return downloadFile(store, url, headers, name, immutable);
+}
+
 std::pair<Tree, time_t> downloadTarball(
     ref<Store> store,
     const std::string & url,
+    const std::map<std::string, std::string> & headers,
     const std::string & name,
     bool immutable)
 {
@@ -122,7 +136,7 @@ std::pair<Tree, time_t> downloadTarball(
             getIntAttr(cached->infoAttrs, "lastModified")
         };
 
-    auto res = downloadFile(store, url, name, immutable);
+    auto res = downloadFile(store, url, headers, name, immutable);
 
     std::optional<StorePath> unpackedStorePath;
     time_t lastModified;
@@ -158,6 +172,16 @@ std::pair<Tree, time_t> downloadTarball(
         Tree(store->toRealPath(*unpackedStorePath), std::move(*unpackedStorePath)),
         lastModified,
     };
+}
+
+std::pair<Tree, time_t> downloadTarball(
+    ref<Store> store,
+    const std::string & url,
+    const std::string & name,
+    bool immutable)
+{
+    std::map<std::string, std::string> headers;
+    return downloadTarball(store, url, headers, name, immutable);
 }
 
 struct TarballInputScheme : InputScheme

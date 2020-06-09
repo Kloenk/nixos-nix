@@ -12,6 +12,18 @@ namespace nix::fetchers {
 const static std::string urlRegexS = "[a-zA-Z0-9.]*"; // FIXME: check
 std::regex urlRegex(urlRegexS, std::regex::ECMAScript);
 
+struct DownloadUrl
+{
+    std::string url;
+    std::optional<std::string> access_token;
+
+    DownloadUrl(const std::string & url)
+        : url(url) { }
+
+    DownloadUrl(const std::string & url, const std::optional<std::string> & access_token)
+        : url(url), access_token(access_token) { }
+};
+
 struct GitArchiveInputScheme : InputScheme
 {
     virtual std::string type() = 0;
@@ -131,7 +143,7 @@ struct GitArchiveInputScheme : InputScheme
 
     virtual Hash getRevFromRef(nix::ref<Store> store, const Input & input) const = 0;
 
-    virtual std::string getDownloadUrl(const Input & input) const = 0;
+    virtual DownloadUrl getDownloadUrl(const Input & input) const = 0;
 
     std::pair<Tree, Input> fetch(ref<Store> store, const Input & _input) override
     {
@@ -160,7 +172,11 @@ struct GitArchiveInputScheme : InputScheme
 
         auto url = getDownloadUrl(input);
 
-        auto [tree, lastModified] = downloadTarball(store, url, "source", true);
+        std::map<std::string, std::string> headers;
+        if (url.access_token)
+            headers.insert_or_assign("PRIVATE-TOKEN", *url.access_token);
+
+        auto [tree, lastModified] = downloadTarball(store, url.url, headers, "source", true);
 
         input.attrs.insert_or_assign("lastModified", lastModified);
 
@@ -196,7 +212,7 @@ struct GitHubInputScheme : GitArchiveInputScheme
         return rev;
     }
 
-    std::string getDownloadUrl(const Input & input) const override
+    DownloadUrl getDownloadUrl(const Input & input) const override
     {
         // FIXME: use regular /archive URLs instead? api.github.com
         // might have stricter rate limits.
@@ -209,7 +225,7 @@ struct GitHubInputScheme : GitArchiveInputScheme
         if (accessToken != "")
             url += "?access_token=" + accessToken;
 
-        return url;
+        return DownloadUrl(url);
     }
 
     void clone(const Input & input, const Path & destDir) override
@@ -240,7 +256,7 @@ struct GitLabInputScheme : GitArchiveInputScheme
         return rev;
     }
 
-    std::string getDownloadUrl(const Input & input) const override
+    DownloadUrl getDownloadUrl(const Input & input) const override
     {
         // FIXME: This endpoint has a rate limit threshold of 5 requests per minute
         auto host_url = maybeGetStrAttr(input.attrs, "url").value_or("gitlab.com");
@@ -253,7 +269,12 @@ struct GitLabInputScheme : GitArchiveInputScheme
         if (accessToken != "")
             url += "?access_token=" + accessToken;*/
 
-        return url;
+        std::optional<std::string> access_token;
+        std::string accessToken = settings.gitlabAccessToken.get();
+        if (accessToken != "")
+            access_token = accessToken;
+
+        return DownloadUrl(url, access_token);
     }
 
     void clone(const Input & input, const Path & destDir) override
