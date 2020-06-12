@@ -139,10 +139,11 @@ static void fetch(EvalState & state, const Pos & pos, Value * * args, Value & v,
     if (evalSettings.pureEval && !expectedHash)
         throw Error("in pure evaluation mode, '%s' requires a 'sha256' argument", who);
 
+    std::map<std::string, std::string> headers;
     auto storePath =
         unpack
-        ? fetchers::downloadTarball(state.store, *url, name, (bool) expectedHash).first.storePath
-        : fetchers::downloadFile(state.store, *url, name, (bool) expectedHash).storePath;
+        ? fetchers::downloadTarball(state.store, *url, headers, name, (bool) expectedHash).first.storePath
+        : fetchers::downloadFile(state.store, *url, headers, name, (bool) expectedHash).storePath;
 
     auto path = state.store->toRealPath(storePath);
 

@@ -203,10 +203,12 @@ struct GitHubInputScheme : GitArchiveInputScheme
         auto host_url = maybeGetStrAttr(input.attrs, "url").value_or("github.com");
         auto url = fmt("https://api.%s/repos/%s/%s/commits/%s", // FIXME: check
             host_url, getStrAttr(input.attrs, "owner"), getStrAttr(input.attrs, "repo"), *input.getRef());
+
+        std::map<std::string, std::string> headers;
         auto json = nlohmann::json::parse(
             readFile(
                 store->toRealPath(
-                    downloadFile(store, url, "source", false).storePath)));
+                    downloadFile(store, url, headers, "source", false).storePath)));
         auto rev = Hash(json["sha"], htSHA1);
         debug("HEAD revision for '%s' is %s", url, rev.gitRev());
         return rev;
@@ -247,10 +249,13 @@ struct GitLabInputScheme : GitArchiveInputScheme
         auto host_url = maybeGetStrAttr(input.attrs, "url").value_or("gitlab.com");
         auto url = fmt("https://%s/api/v4/projects/%s%%2F%s/repository/branches/%s",
             host_url, getStrAttr(input.attrs, "owner"), getStrAttr(input.attrs, "repo"), *input.getRef());
+
+        std::map<std::string, std::string> headers;
+        // FIXME: add token
         auto json = nlohmann::json::parse(
             readFile(
                 store->toRealPath(
-                    downloadFile(store, url, "source", false).storePath)));
+                    downloadFile(store, url, headers, "source", false).storePath)));
         auto rev = Hash(json["commit"]["id"], htSHA1);
         debug("HEAD revision for '%s' is %s", url, rev.gitRev());
         return rev;

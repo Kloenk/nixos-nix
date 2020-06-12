@@ -126,7 +126,7 @@ std::pair<Tree, time_t> downloadTarball(
             getIntAttr(cached->infoAttrs, "lastModified")
         };
 
-    auto res = downloadFile(store, url, headers, name, immutable);
+    DownloadFileResult res = downloadFile(store, url, headers, name, immutable);
 
     std::optional<StorePath> unpackedStorePath;
     time_t lastModified;
