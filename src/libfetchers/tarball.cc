@@ -105,16 +105,6 @@ DownloadFileResult downloadFile(
     };
 }
 
-DownloadFileResult downloadFile(
-    ref<Store> store,
-    const std::string & url,
-    const std::string & name,
-    bool immutable)
-{
-    std::map<std::string, std::string> headers;
-    return downloadFile(store, url, headers, name, immutable);
-}
-
 std::pair<Tree, time_t> downloadTarball(
     ref<Store> store,
     const std::string & url,
